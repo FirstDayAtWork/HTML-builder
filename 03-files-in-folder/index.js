@@ -7,7 +7,7 @@ function getInfoAboutFilesInFolder(folder) {
     (err, files) => {
       if (err) throw err;
       for (const file of files) {
-        const filePath = `${file.path}\\\\${file.name}`;
+        const filePath = path.join(file.path, file.name);
         fs.stat(filePath, (err, stats) => {
           if (err) throw err;
           if (stats.isFile()) {
