@@ -22,7 +22,7 @@ function editFile(file) {
             rl.close();
             return;
         }
-        file.write(answer);
+        file.write(answer + "\n");
         console.log(answer);
     })
     rl.on("SIGINT", () => {
