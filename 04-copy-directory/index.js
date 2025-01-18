@@ -1,61 +1,41 @@
-import fs from "fs"
+import fs from "fs/promises"
 import path from "path"
 import { fileURLToPath } from "url"
-import { constants } from "buffer";
 
-function copyDir(folderToCopy, oldFile, newFile, dirname) {
-    fs.readdir(folderToCopy, { withFileTypes: true },
-        (err, files) => {
-          if (err) throw err;
-          for (const file of files) {
-            const prevFilePath = path.join(dirname, oldFile, file.name);
-            const newFilePath = path.join(dirname, newFile, file.name);
-            fs.copyFile(prevFilePath, newFilePath, (err) => {
-                if (err) throw err;
-                console.log(`${file.name} successfully copied!`)
-            })
-          }
-        }
-    );
-    compareDirs(path.join(dirname, oldFile), path.join(dirname, newFile));
+async function copyDir(folderToCopy, oldFile, newFile, dirname) {
+  try {
+    const files = await fs.readdir(folderToCopy, { withFileTypes: true });
+    for (const file of files) {
+      const prevFilePath = path.join(dirname, oldFile, file.name);
+      const newFilePath = path.join(dirname, newFile, file.name);
+      await fs.copyFile(prevFilePath, newFilePath);
+    }
+  } catch (error) {
+    console.error(err)
+  }
 }
-function createFolder(dirname) {
+async function createFolder(dirname) {
+  try {
     const folder = path.join(dirname, "files-copy")
-    fs.mkdir(folder, { recursive: true}, (err) => {
-        if (err) throw err;
-        console.log("New folder is created!");
-    })
+    await fs.mkdir(folder, { recursive: true });
+  } catch (error) {
+    console.error(err)
+  }
 }
-function deleteFile(file) {
-    fs.unlink(file, (err) => {
-        if (err) throw err;
-        console.log("File deleted!");
-    });
-}
-function checkIfFileExist(fileOld, fileNew) {
-    fs.access(fileOld, constants.F_OK, (err) => {
-        if (err) {
-            deleteFile(fileNew);
-        }
-    })
-}
-function compareDirs(dirOld, dirNew) {
-    fs.readdir(dirNew, { withFileTypes: true},
-        (err, files) => {
-            if (err) throw err;
-            for (const file of files) {
-                const filePathOld = path.join(dirOld, file.name);
-                const filePathNew = path.join(dirNew, file.name);
-                checkIfFileExist(filePathOld, filePathNew);
-            }
-        }
-    )
+async function deleteFiles(dirname, folderName) {
+  try {
+    const folder = path.join(dirname, folderName);
+    await fs.rm(folder, { recursive: true, force: true });
+  } catch (err) {
+    console.error(err)
+  }
 }
 
-;(() => {
+;(async () => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const folderToCopy = path.join(__dirname, "files");
-    createFolder(__dirname);
-    copyDir(folderToCopy, "files", "files-copy", __dirname);
-  })();
+    await deleteFiles(__dirname, "files-copy");
+    await createFolder(__dirname);
+    await copyDir(folderToCopy, "files", "files-copy", __dirname);
+})();
