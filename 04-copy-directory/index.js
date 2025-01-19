@@ -10,7 +10,7 @@ async function copyDir(folderToCopy, oldFile, newFile, dirname) {
       const newFilePath = path.join(dirname, newFile, file.name);
       await fs.copyFile(prevFilePath, newFilePath);
     }
-  } catch (error) {
+  } catch (err) {
     console.error(err)
   }
 }
@@ -18,7 +18,7 @@ async function createFolder(dirname) {
   try {
     const folder = path.join(dirname, "files-copy")
     await fs.mkdir(folder, { recursive: true });
-  } catch (error) {
+  } catch (err) {
     console.error(err)
   }
 }
